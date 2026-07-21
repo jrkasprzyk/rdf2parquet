@@ -3,13 +3,13 @@ goal: Build rdf2parquet — a standalone C++ CLI that converts RiverWare RDF fil
 version: 1.0
 date_created: 2026-07-21
 owner: Joseph Kasprzyk (jrkasprzyk)
-status: 'Planned'
+status: 'In Progress'
 tags: [feature, architecture, cpp, parquet, riverware, cadswes, education]
 ---
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: In Progress](https://img.shields.io/badge/status-In%20Progress-yellow)
 
 Create a new repository `rdf2parquet` containing a C++17 command-line utility that (a) parses RiverWare RDF ensemble output files, (b) writes them as Apache Parquet in a long/tidy layout by default with an optional wide (trace-columns) layout, and (c) reads Parquet files back for inspection (`info`, `head`) and CSV export (`to-csv`). The tool uses the official Apache Arrow C++ library (which contains the canonical Parquet implementation) so the codebase doubles as an educational reference for the CADSWES team, whose RiverWare codebase is C++. Behavior is validated against the existing Python reference parser `example_scripts/rdf_parser.py` and shared fixtures `public/rw-sample-data/*.rdf`. 
 
@@ -38,9 +38,9 @@ Create a new repository `rdf2parquet` containing a C++17 command-line utility th
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-001 | Use THIS existing repo (`C:\Github\rdf2parquet`, created for this purpose — do not scaffold elsewhere). Rename branch `master`→`main` (`git branch -m master main`), add MIT `LICENSE`, push to github.com/jrkasprzyk/rdf2parquet (public). Keep existing folders (`plan/`, `example_scripts/`, `public/rw-sample-data/`). Add: `CMakeLists.txt`, `vcpkg.json`, `src/`, `include/rdf2parquet/`, `tests/`, `docs/`, `.github/workflows/`, `.gitignore` (CMake/vcpkg/build artifacts), `README.md` stub. | | |
-| TASK-002 | `vcpkg.json` manifest with dependencies: `arrow` (feature `parquet`), `cli11`, `catch2`; pin a vcpkg baseline commit. `CMakeLists.txt`: project `rdf2parquet` VERSION 0.1.0, C++17, targets `rdf2parquet_lib` (static lib), `rdf2parquet` (CLI exe), `rdf2parquet_tests` (Catch2, registered via `catch_discover_tests`). | | |
-| TASK-003 | GitHub Actions workflow `.github/workflows/ci.yml`: matrix `windows-latest` (MSVC) + `ubuntu-latest` (gcc); steps: checkout, vcpkg install with GitHub Actions binary cache (`vcpkg-action` or `run-vcpkg`), CMake configure/build Release, `ctest --output-on-failure`. | | |
-| TASK-004 | Sample data exists in `public/rw-sample-data`. Copy to `tests/fixtures/`; add `tests/fixtures/README.md` describing them as synthetic RiverWare-style sample data created for this project, copied from `public/rw-sample-data/` (no external-repo references). | | |
+| TASK-002 | `vcpkg.json` manifest with dependencies: `arrow` (feature `parquet`), `cli11`, `catch2`; pin a vcpkg baseline commit. `CMakeLists.txt`: project `rdf2parquet` VERSION 0.1.0, C++17, targets `rdf2parquet_lib` (static lib), `rdf2parquet` (CLI exe), `rdf2parquet_tests` (Catch2, registered via `catch_discover_tests`). | x | 2026-07-21 |
+| TASK-003 | GitHub Actions workflow `.github/workflows/ci.yml`: matrix `windows-latest` (MSVC) + `ubuntu-latest` (gcc); steps: checkout, vcpkg install with GitHub Actions binary cache (`vcpkg-action` or `run-vcpkg`), CMake configure/build Release, `ctest --output-on-failure`. | x | 2026-07-21 |
+| TASK-004 | Sample data exists in `public/rw-sample-data`. Copy to `tests/fixtures/`; add `tests/fixtures/README.md` describing them as synthetic RiverWare-style sample data created for this project, copied from `public/rw-sample-data/` (no external-repo references). | x | 2026-07-21 |
 
 ### Implementation Phase 2 — RDF parser core (no Arrow)
 
@@ -48,9 +48,9 @@ Create a new repository `rdf2parquet` containing a C++17 command-line utility th
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-005 | `include/rdf2parquet/rdf_model.hpp`: structs `RdfSlot` {object, slot_name, units (string), scale (string), values (std::vector<std::optional<double>>), is_scalar}, `RdfRun` {preamble (string→string map), timesteps (std::vector<std::string> ISO dates), slots}, `RdfFile` {package_preamble, runs, warnings (std::vector<std::string>)}. | | |
-| TASK-006 | `src/rdf_parser.cpp` + `include/rdf2parquet/rdf_parser.hpp`: port `normalizeTimestamp`, `parsePreamble`, `bareValue`, `safeFloat`, slot-block parser, run loop from `example_scripts/rdfParser.js` per PAT-001, EXCEPT: per-value null coercion (REQ-001 deviation), multi-column-slot detection (after `END_COLUMN` require `END_SLOT` else throw), wrong-value-count slot → warn+skip (REQ-006). Throw `RdfParseError` (carries line number) on structural errors; enforce SEC-001 allocation caps. Validate `number_of_runs` present and ≥1 run parsed. | | |
-| TASK-007 | `tests/test_rdf_parser.cpp`: port every case from `example_scripts/test_rdf_parser.py` (timestamp normalization incl. single-digit month/day, preamble parsing, scalar vs series slots, malformed-input errors, non-finite value → null) plus fixture-driven assertions on `sample_traces.rdf` (run count, slot names, first/last values, units, scale). | | |
+| TASK-005 | `include/rdf2parquet/rdf_model.hpp`: structs `RdfSlot` {object, slot_name, units (string), scale (string), values (std::vector<std::optional<double>>), is_scalar}, `RdfRun` {preamble (string→string map), timesteps (std::vector<std::string> ISO dates), slots}, `RdfFile` {package_preamble, runs, warnings (std::vector<std::string>)}. | x | 2026-07-21 |
+| TASK-006 | `src/rdf_parser.cpp` + `include/rdf2parquet/rdf_parser.hpp`: port `normalizeTimestamp`, `parsePreamble`, `bareValue`, `safeFloat`, slot-block parser, run loop from `example_scripts/rdfParser.js` per PAT-001, EXCEPT: per-value null coercion (REQ-001 deviation), multi-column-slot detection (after `END_COLUMN` require `END_SLOT` else throw), wrong-value-count slot → warn+skip (REQ-006). Throw `RdfParseError` (carries line number) on structural errors; enforce SEC-001 allocation caps. Validate `number_of_runs` present and ≥1 run parsed. | x | 2026-07-21 |
+| TASK-007 | `tests/test_rdf_parser.cpp`: port every case from `example_scripts/test_rdf_parser.py` (timestamp normalization incl. single-digit month/day, preamble parsing, scalar vs series slots, malformed-input errors, non-finite value → null) plus fixture-driven assertions on `sample_traces.rdf` (run count, slot names, first/last values, units, scale). | x | 2026-07-21 |
 
 ### Implementation Phase 3 — Long-format Parquet writer
 
@@ -58,9 +58,9 @@ Create a new repository `rdf2parquet` containing a C++17 command-line utility th
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-008 | `src/parquet_write_long.cpp` + header: build `arrow::Table` from `RdfFile` using builders (`Int32Builder`, `StringDictionaryBuilder`, `Date32Builder`, `DoubleBuilder`); exact column order/types per REQ-002; ISO date string → date32 via days-since-epoch conversion; scalar slots emitted as single row with null timestep. | | |
-| TASK-009 | Attach REQ-003 key-value metadata (serialize preambles to JSON with a minimal internal JSON writer — no extra dependency); write via `parquet::arrow::WriteTable` with compression from `--compression` flag (zstd default), row group size 1,000,000. | | |
-| TASK-010 | `tests/test_write_long.cpp`: write fixture to temp dir, read back with `parquet::arrow::OpenFile`, assert schema (names, types, order), row count = Σ runs×timesteps + scalars, spot-check values against parser output, assert metadata keys present and JSON-parseable. | | |
+| TASK-008 | `src/parquet_write_long.cpp` + header: build `arrow::Table` from `RdfFile` using builders (`Int32Builder`, `StringDictionaryBuilder`, `Date32Builder`, `DoubleBuilder`); exact column order/types per REQ-002; ISO date string → date32 via days-since-epoch conversion; scalar slots emitted as single row with null timestep. | x | 2026-07-21 |
+| TASK-009 | Attach REQ-003 key-value metadata (serialize preambles to JSON with a minimal internal JSON writer — no extra dependency); write via `parquet::arrow::WriteTable` with compression from `--compression` flag (zstd default), row group size 1,000,000. | x | 2026-07-21 |
+| TASK-010 | `tests/test_write_long.cpp`: write fixture to temp dir, read back with `parquet::arrow::OpenFile`, assert schema (names, types, order), row count = Σ runs×timesteps + scalars, spot-check values against parser output, assert metadata keys present and JSON-parseable. | x | 2026-07-21 |
 
 ### Implementation Phase 4 — Wide-format writer
 
@@ -68,8 +68,8 @@ Create a new repository `rdf2parquet` containing a C++17 command-line utility th
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-011 | `src/parquet_write_wide.cpp` + header: group slots by (object, slot_name) across runs; validate all runs share identical timestep vectors for a slot (mismatch → exit 2 with message); validate trace ids unique (dup → exit 2); emit `timestep` + `trace_<id>` columns (same ids as long format); filename sanitization + collision check per REQ-004; dir create/overwrite/stale-warning semantics per REQ-004; write scalar slots to `scalars.parquet` in the output dir (long-format scalar shape, no timestep column). | | |
-| TASK-012 | `tests/test_write_wide.cpp`: fixture → wide dir; assert file-per-slot naming, column count = runs+1, values match long-format pivot for two sampled slots; assert `scalars.parquet` present with expected scalar rows; assert stale-file warning and filename-collision error paths. | | |
+| TASK-011 | `src/parquet_write_wide.cpp` + header: group slots by (object, slot_name) across runs; validate all runs share identical timestep vectors for a slot (mismatch → exit 2 with message); validate trace ids unique (dup → exit 2); emit `timestep` + `trace_<id>` columns (same ids as long format); filename sanitization + collision check per REQ-004; dir create/overwrite/stale-warning semantics per REQ-004; write scalar slots to `scalars.parquet` in the output dir (long-format scalar shape, no timestep column). | x | 2026-07-21 |
+| TASK-012 | `tests/test_write_wide.cpp`: fixture → wide dir; assert file-per-slot naming, column count = runs+1, values match long-format pivot for two sampled slots; assert `scalars.parquet` present with expected scalar rows; assert stale-file warning and filename-collision error paths. | x | 2026-07-21 |
 
 ### Implementation Phase 5 — Parquet read side (info, head, to-csv)
 
@@ -77,9 +77,9 @@ Create a new repository `rdf2parquet` containing a C++17 command-line utility th
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-013 | `src/parquet_read.cpp` + header: `info` prints file path, size, row count, column schema (name, physical+logical type), row-group count/sizes, compression codec per column chunk, and all key-value metadata; `head -n N` prints first N rows tab-separated (dictionary columns decoded, nulls as empty string); `to-csv` streams full file to RFC-4180 CSV (quote fields containing comma/quote/newline); `head`/`to-csv` reject nested (list/struct/map) columns with exit 2 per REQ-005; nulls → empty fields. | | |
-| TASK-014 | `src/main.cpp`: CLI11 app with the four subcommands per REQ-005, `--version`, exit-code mapping per REQ-006 (catch `RdfParseError` → 2, CLI11 parse error → 1). | | |
-| TASK-015 | `tests/test_cli.cpp`: end-to-end via `std::system` on the built binary (path passed by CMake `target_compile_definitions`): convert→info→head→to-csv round trip on `sample_traces.rdf`; assert exit codes for missing file, malformed RDF, bad flag. | | |
+| TASK-013 | `src/parquet_read.cpp` + header: `info` prints file path, size, row count, column schema (name, physical+logical type), row-group count/sizes, compression codec per column chunk, and all key-value metadata; `head -n N` prints first N rows tab-separated (dictionary columns decoded, nulls as empty string); `to-csv` streams full file to RFC-4180 CSV (quote fields containing comma/quote/newline); `head`/`to-csv` reject nested (list/struct/map) columns with exit 2 per REQ-005; nulls → empty fields. | x | 2026-07-21 |
+| TASK-014 | `src/main.cpp`: CLI11 app with the four subcommands per REQ-005, `--version`, exit-code mapping per REQ-006 (catch `RdfParseError` → 2, CLI11 parse error → 1). | x | 2026-07-21 |
+| TASK-015 | `tests/test_cli.cpp`: end-to-end via `std::system` on the built binary (path passed by CMake `target_compile_definitions`): convert→info→head→to-csv round trip on `sample_traces.rdf`; assert exit codes for missing file, malformed RDF, bad flag. | x | 2026-07-21 |
 
 ### Implementation Phase 6 — Validation vs reference, docs, release
 
@@ -87,9 +87,9 @@ Create a new repository `rdf2parquet` containing a C++17 command-line utility th
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-016 | `tools/crosscheck.py`: parses a given RDF with `example_scripts/rdf_parser.py` (default `--reference` path: `example_scripts/rdf_parser.py` in this repo), reads the tool's long Parquet with pyarrow, asserts row-for-row equality (trace, object, slot, timestep, units, value; float compare exact since both store raw tokens). Applies the REQ-001 per-value null coercion to the Python output before comparing (the reference falls back to whole-list strings on any non-numeric token — a documented deliberate deviation). Run manually against both fixtures; record result in README. | | |
-| TASK-017 | `docs/FORMAT.md`: annotated RDF walkthrough (preambles, timestep list, slot blocks, END markers) with a real excerpt from `sample_subset.rdf`; mapping tables RDF→long schema and RDF→wide schema; explanation of dictionary encoding, row groups, and compression choices with observed size numbers (CSV vs zstd Parquet for the fixtures). | | |
-| TASK-018 | `README.md`: build instructions (vcpkg bootstrap + CMake preset, Windows and Linux), CLI reference for all four subcommands, pandas snippet (`pd.read_parquet`), DuckDB snippet (`SELECT object, slot, avg(value) ... GROUP BY`), fixture provenance, link to FORMAT.md. Copy this plan file into `rdf2parquet/plan/` and mark completed tasks. | | |
+| TASK-016 | `tools/crosscheck.py`: parses a given RDF with `example_scripts/rdf_parser.py` (default `--reference` path: `example_scripts/rdf_parser.py` in this repo), reads the tool's long Parquet with pyarrow, asserts row-for-row equality (trace, object, slot, timestep, units, value; float compare exact since both store raw tokens). Applies the REQ-001 per-value null coercion to the Python output before comparing (the reference falls back to whole-list strings on any non-numeric token — a documented deliberate deviation). Run manually against both fixtures; record result in README. | x | 2026-07-21 |
+| TASK-017 | `docs/FORMAT.md`: annotated RDF walkthrough (preambles, timestep list, slot blocks, END markers) with a real excerpt from `sample_subset.rdf`; mapping tables RDF→long schema and RDF→wide schema; explanation of dictionary encoding, row groups, and compression choices with observed size numbers (CSV vs zstd Parquet for the fixtures). | x | 2026-07-21 |
+| TASK-018 | `README.md`: build instructions (vcpkg bootstrap + CMake preset, Windows and Linux), CLI reference for all four subcommands, pandas snippet (`pd.read_parquet`), DuckDB snippet (`SELECT object, slot, avg(value) ... GROUP BY`), fixture provenance, link to FORMAT.md. Copy this plan file into `rdf2parquet/plan/` and mark completed tasks. | x | 2026-07-21 |
 | TASK-019 | Tag `v0.1.0`; attach CI-built Windows x64 binary zip to the GitHub release (add release job to ci.yml triggered on tag). | | |
 
 ## 3. Alternatives

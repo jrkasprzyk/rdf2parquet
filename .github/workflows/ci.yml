@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            preset: windows
+          - os: ubuntu-latest
+            preset: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 6b14108f49a5bb3738426a466db8cb8bff2710be
+
+      - name: Configure
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: ${{ matrix.preset }}
+          buildPreset: ${{ matrix.preset }}
+
+      - name: Test
+        working-directory: build/${{ matrix.preset }}
+        run: ctest --output-on-failure --build-config Release
+
+      - name: Stage Windows binary
+        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          mkdir dist
+          copy build\windows\rdf2parquet.exe dist\rdf2parquet.exe
+        shell: cmd
+
+      - name: Upload Windows binary artifact
+        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: rdf2parquet-windows-x64
+          path: dist/rdf2parquet.exe
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: rdf2parquet-windows-x64
+          path: dist
+
+      - name: Zip Windows binary
+        run: |
+          cd dist
+          zip rdf2parquet-windows-x64.zip rdf2parquet.exe
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/rdf2parquet-windows-x64.zip
+          generate_release_notes: true

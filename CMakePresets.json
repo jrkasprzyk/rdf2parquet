@@ -1,0 +1,57 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows",
+      "inherits": "base",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux",
+      "inherits": "base",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "windows", "configurePreset": "windows" },
+    { "name": "linux", "configurePreset": "linux" }
+  ],
+  "testPresets": [
+    {
+      "name": "windows",
+      "configurePreset": "windows",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "linux",
+      "configurePreset": "linux",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

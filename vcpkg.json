@@ -1,0 +1,13 @@
+{
+  "name": "rdf2parquet",
+  "version": "0.1.0",
+  "builtin-baseline": "6b14108f49a5bb3738426a466db8cb8bff2710be",
+  "dependencies": [
+    {
+      "name": "arrow",
+      "features": ["parquet"]
+    },
+    "cli11",
+    "catch2"
+  ]
+}
