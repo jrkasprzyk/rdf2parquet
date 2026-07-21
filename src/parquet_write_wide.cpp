@@ -85,7 +85,8 @@ void writeScalarsFile(const std::vector<std::pair<const RdfRun*, const RdfSlot*>
                        const std::string& outPath, Compression compression) {
   ScalarRowBuilders builders;
   for (const auto& [run, slot] : scalars) {
-    std::optional<double> v = slot->values.empty() ? std::nullopt : slot->values[0];
+    std::optional<double> v;
+    if (!slot->values.empty()) v = slot->values[0];
     builders.appendRow(run->trace_id, *slot, v);
   }
   writeTableToFile(builders.finish(scalarSchema()), outPath, compression);

@@ -44,12 +44,13 @@ std::shared_ptr<arrow::Table> readTable(const std::string& path) {
   REQUIRE(maybeInfile.ok());
   auto infile = *maybeInfile;
 
-  std::unique_ptr<parquet::arrow::FileReader> reader;
-  REQUIRE(parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &reader).ok());
+  auto maybeReader = parquet::arrow::OpenFile(infile, arrow::default_memory_pool());
+  REQUIRE(maybeReader.ok());
+  auto reader = std::move(maybeReader).ValueOrDie();
 
-  std::shared_ptr<arrow::Table> table;
-  REQUIRE(reader->ReadTable(&table).ok());
-  return table;
+  auto maybeTable = reader->ReadTable();
+  REQUIRE(maybeTable.ok());
+  return *maybeTable;
 }
 
 std::vector<double> doubleColumn(const std::shared_ptr<arrow::Table>& table, int col) {

@@ -1,14 +1,13 @@
 # rdf2parquet
 
 A C++17 command-line tool that converts RiverWare RDF ensemble output files
-to Apache Parquet — long/tidy layout by default, optional wide (trace-column)
-layout — and reads Parquet files back for inspection and CSV export. Built on
-the official Apache Arrow C++ library (the canonical Parquet implementation),
-so this codebase doubles as a compact, real-world example of using Arrow C++
-for the CADSWES/RiverWare team.
+to Apache Parquet, as well as reading Parquet files for inspection and CSV export.
+The tool uses long/tidy layout by default, or an optional wide (trace-column) 
+layout. Built on the official Apache Arrow C++ library (the canonical Parquet 
+implementation).
 
 See [`docs/FORMAT.md`](docs/FORMAT.md) for an annotated walkthrough of the
-RDF text format and exactly how it maps to each Parquet layout.
+RDF text format and how it maps to each Parquet layout.
 
 ## Build
 
@@ -17,25 +16,66 @@ Requires C++17, CMake ≥ 3.25, and [vcpkg](https://vcpkg.io) in manifest mode
 Catch2, the first time you configure). The first build compiles Arrow from
 source and can take tens of minutes; subsequent builds are fast.
 
+vcpkg is a general-purpose toolchain, not a per-project dependency — clone it
+once, anywhere convenient *outside* this repo (e.g. next to your other
+projects), and reuse it for everything. Set `VCPKG_ROOT` to wherever you put
+it; add the `VCPKG_ROOT` line to your shell profile so it persists across
+sessions instead of re-running it every time.
+
+### Windows
+
+**Prerequisites:** CMake, Ninja, and a C++17 compiler (MSVC via Visual Studio
+Build Tools). If you don't already have them:
+
+```powershell
+winget install Kitware.CMake
+winget install Ninja-build.Ninja
+winget install Microsoft.VisualStudio.2022.BuildTools --override "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+```
+
+`CMakePresets.json` uses the Ninja generator, so it needs to find both `cmake`
+and `ninja` on `PATH`, and MSVC's compiler needs a Developer environment —
+run the rest of this from a **Developer PowerShell for VS 2022** prompt (or
+`winget`'s installer will have registered one in your Start menu).
+
+```powershell
+# once, if you don't already have vcpkg:
+git clone https://github.com/microsoft/vcpkg C:\GitHub\vcpkg
+C:\GitHub\vcpkg\bootstrap-vcpkg.bat
+$env:VCPKG_ROOT = "C:\[path-to]\vcpkg"
+```
+
+Then, from this repository:
+
+```powershell
+cmake --preset windows
+cmake --build --preset windows
+ctest --preset windows --output-on-failure
+```
+
+### Linux
+
+**Prerequisites:** CMake, Ninja, and a C++17 compiler (gcc ≥ 11). On
+Ubuntu/Debian, if you don't already have them:
+
+```sh
+sudo apt install build-essential cmake ninja-build
+```
+
 ```sh
 # once, if you don't already have vcpkg:
-git clone https://github.com/microsoft/vcpkg
-./vcpkg/bootstrap-vcpkg.sh          # Linux/macOS
-# .\vcpkg\bootstrap-vcpkg.bat       # Windows
-export VCPKG_ROOT=$(pwd)/vcpkg      # Linux/macOS
-# $env:VCPKG_ROOT = "$(pwd)\vcpkg"  # Windows PowerShell
+git clone https://github.com/microsoft/vcpkg ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh
+export VCPKG_ROOT=~/vcpkg
 ```
 
 Then, from this repository:
 
 ```sh
-cmake --preset windows   # or: linux
-cmake --build --preset windows
-ctest --preset windows --output-on-failure
+cmake --preset linux
+cmake --build --preset linux
+ctest --preset linux --output-on-failure
 ```
-
-(`CMakePresets.json` picks the right one; `windows`/`linux` here are preset
-names, not commands you need to branch on manually.)
 
 ## CLI reference
 

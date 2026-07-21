@@ -20,12 +20,14 @@ void writeLongParquet(const RdfFile& file, const std::string& outPath, Compressi
       if (!slot.is_scalar.has_value()) continue;  // REQ-006: warned-and-skipped slot
 
       if (*slot.is_scalar) {
-        std::optional<double> v = slot.values.empty() ? std::nullopt : slot.values[0];
+        std::optional<double> v;
+        if (!slot.values.empty()) v = slot.values[0];
         builders.appendRow(run.trace_id, slot, std::nullopt, v);
       } else {
         for (std::size_t i = 0; i < run.timesteps.size(); ++i) {
           int32_t days = isoDateToDays(run.timesteps[i]);
-          std::optional<double> v = i < slot.values.size() ? slot.values[i] : std::nullopt;
+          std::optional<double> v;
+          if (i < slot.values.size()) v = slot.values[i];
           builders.appendRow(run.trace_id, slot, days, v);
         }
       }

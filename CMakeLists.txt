@@ -26,9 +26,24 @@ add_library(rdf2parquet_lib STATIC
 target_include_directories(rdf2parquet_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
+# vcpkg's default triplet is static on Linux but dynamic on Windows, so only
+# one of Arrow::arrow_static / Arrow::arrow_shared actually exists depending
+# on platform (same for Parquet) — pick whichever the triplet produced rather
+# than hardcoding one and breaking the other.
+if(TARGET Arrow::arrow_static)
+  set(RDF2PARQUET_ARROW_TARGET Arrow::arrow_static)
+else()
+  set(RDF2PARQUET_ARROW_TARGET Arrow::arrow_shared)
+endif()
+if(TARGET Parquet::parquet_static)
+  set(RDF2PARQUET_PARQUET_TARGET Parquet::parquet_static)
+else()
+  set(RDF2PARQUET_PARQUET_TARGET Parquet::parquet_shared)
+endif()
+
 target_link_libraries(rdf2parquet_lib PUBLIC
-  Arrow::arrow_static
-  Parquet::parquet_static
+  ${RDF2PARQUET_ARROW_TARGET}
+  ${RDF2PARQUET_PARQUET_TARGET}
 )
 target_compile_definitions(rdf2parquet_lib PUBLIC
   RDF2PARQUET_VERSION="${PROJECT_VERSION}"

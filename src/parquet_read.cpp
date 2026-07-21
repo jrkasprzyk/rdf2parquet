@@ -35,10 +35,9 @@ std::unique_ptr<parquet::arrow::FileReader> openReader(const std::string& path) 
   auto maybeInfile = arrow::io::ReadableFile::Open(path);
   checkStatus(maybeInfile.status(), "open " + path);
 
-  std::unique_ptr<parquet::arrow::FileReader> reader;
-  auto status = parquet::arrow::OpenFile(*maybeInfile, arrow::default_memory_pool(), &reader);
-  checkStatus(status, "open " + path + " as Parquet");
-  return reader;
+  auto maybeReader = parquet::arrow::OpenFile(*maybeInfile, arrow::default_memory_pool());
+  checkStatus(maybeReader.status(), "open " + path + " as Parquet");
+  return std::move(maybeReader).ValueOrDie();
 }
 
 bool isNested(const std::shared_ptr<arrow::DataType>& type) {
@@ -117,9 +116,9 @@ std::string cellToString(const std::shared_ptr<arrow::Array>& col, int64_t row) 
 }
 
 std::shared_ptr<arrow::Table> readWholeTable(parquet::arrow::FileReader& reader) {
-  std::shared_ptr<arrow::Table> table;
-  checkStatus(reader.ReadTable(&table), "read table");
-  auto combined = table->CombineChunks();
+  auto maybeTable = reader.ReadTable();
+  checkStatus(maybeTable.status(), "read table");
+  auto combined = (*maybeTable)->CombineChunks();
   checkStatus(combined.status(), "combine chunks");
   return *combined;
 }
