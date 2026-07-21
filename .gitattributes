@@ -1,0 +1,25 @@
+# --- Line-ending normalization ---------------------------------------------
+# Store all text as LF in the repo and check out as LF on every platform.
+# Repo blobs are already LF, so this only stops Windows CRLF working-tree
+# churn from showing files as modified. Binary types are pinned below so
+# their bytes are never touched.
+* text=auto eol=lf
+
+# RiverWare model + binary asset types: never apply EOL conversion.
+*.mdl   binary
+*.rls   binary
+*.gfs   binary
+*.sct   binary
+*.rdf   binary
+*.db    binary
+*.xlsx  binary
+*.pptx  binary
+*.docx  binary
+*.pdf   binary
+*.png   binary
+*.zip   binary
+*.gz    binary
+
+# --- Explicit doc pins --------------------------------
+.gitignore text eol=lf
+.gitattributes text eol=lf
