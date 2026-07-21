@@ -8,6 +8,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <parquet/arrow/reader.h>
 #include <sstream>
