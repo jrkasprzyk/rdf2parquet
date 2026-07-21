@@ -1,0 +1,154 @@
+name:Example Subset Ensemble Runs
+owner:example_user
+description:Synthetic subset sample for testing
+create_date:2024-6-1 0:00
+number_of_runs:2
+END_PACKAGE_PREAMBLE
+trace:1
+start:2024-6-1 24:00
+end:2024-6-4 24:00
+time_step_unit:day
+unit_quantity:1
+time_steps:4
+consecutive:0
+rule_set:(Example Rules)
+idx_sequential:0
+END_RUN_PREAMBLE
+2024-6-1 24:00
+2024-6-2 24:00
+2024-6-3 24:00
+2024-6-4 24:00
+object_type: LevelPowerReservoir
+object_name: Example Reservoir
+slot_type: SeriesSlot
+slot_name: Pool Elevation
+END_SLOT_PREAMBLE
+units: feet
+scale: 1
+1095.0
+1094.5
+1094.0
+1093.5
+END_COLUMN
+END_SLOT
+object_type: LevelPowerReservoir
+object_name: Example Reservoir
+slot_type: SeriesSlot
+slot_name: Outflow
+END_SLOT_PREAMBLE
+units: cfs
+scale: 1
+600.0
+610.0
+620.0
+630.0
+END_COLUMN
+END_SLOT
+object_type: LevelPowerReservoir
+object_name: Example Reservoir
+slot_type: SeriesSlot
+slot_name: Turbine Release
+END_SLOT_PREAMBLE
+units: cfs
+scale: 1
+580.0
+590.0
+600.0
+610.0
+END_COLUMN
+END_SLOT
+object_type: DataObj
+object_name: Run Management
+slot_type: ScalarSlot
+slot_name: Trace Historical Year
+END_SLOT_PREAMBLE
+units: NONE
+scale: 1
+2010
+END_COLUMN
+END_SLOT
+object_type: DataObj
+object_name: Run Management
+slot_type: ScalarSlot
+slot_name: Historical Year Percent of Average
+END_SLOT_PREAMBLE
+units: percent
+scale: 1
+97.0
+END_COLUMN
+END_SLOT
+END_RUN
+trace:2
+start:2024-6-1 24:00
+end:2024-6-4 24:00
+time_step_unit:day
+unit_quantity:1
+time_steps:4
+consecutive:0
+rule_set:(Example Rules)
+idx_sequential:0
+END_RUN_PREAMBLE
+2024-6-1 24:00
+2024-6-2 24:00
+2024-6-3 24:00
+2024-6-4 24:00
+object_type: LevelPowerReservoir
+object_name: Example Reservoir
+slot_type: SeriesSlot
+slot_name: Pool Elevation
+END_SLOT_PREAMBLE
+units: feet
+scale: 1
+1096.0
+1095.5
+1095.0
+1094.5
+END_COLUMN
+END_SLOT
+object_type: LevelPowerReservoir
+object_name: Example Reservoir
+slot_type: SeriesSlot
+slot_name: Outflow
+END_SLOT_PREAMBLE
+units: cfs
+scale: 1
+590.0
+600.0
+610.0
+620.0
+END_COLUMN
+END_SLOT
+object_type: LevelPowerReservoir
+object_name: Example Reservoir
+slot_type: SeriesSlot
+slot_name: Turbine Release
+END_SLOT_PREAMBLE
+units: cfs
+scale: 1
+570.0
+580.0
+590.0
+600.0
+END_COLUMN
+END_SLOT
+object_type: DataObj
+object_name: Run Management
+slot_type: ScalarSlot
+slot_name: Trace Historical Year
+END_SLOT_PREAMBLE
+units: NONE
+scale: 1
+2015
+END_COLUMN
+END_SLOT
+object_type: DataObj
+object_name: Run Management
+slot_type: ScalarSlot
+slot_name: Historical Year Percent of Average
+END_SLOT_PREAMBLE
+units: percent
+scale: 1
+105.0
+END_COLUMN
+END_SLOT
+END_RUN
