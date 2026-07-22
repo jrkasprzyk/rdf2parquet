@@ -34,10 +34,14 @@ int runCli(const std::vector<std::string>& args) {
   cmd << "\"" << cliPath() << "\"";
   for (const auto& a : args) cmd << " \"" << a << "\"";
 
-  int ret = std::system(cmd.str().c_str());
 #ifdef _WIN32
-  return ret;
+  // std::system runs `cmd /c <string>`, and cmd strips the first and last
+  // quote of that string before parsing it. With more than one quoted token
+  // that unbalances the rest, so wrap the whole line in a sacrificial pair.
+  const std::string line = "\"" + cmd.str() + "\"";
+  return std::system(line.c_str());
 #else
+  int ret = std::system(cmd.str().c_str());
   return WIFEXITED(ret) ? WEXITSTATUS(ret) : -1;
 #endif
 }
