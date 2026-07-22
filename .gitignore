@@ -66,3 +66,8 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Python bytecode (example_scripts/ and tools/ are run directly)
+__pycache__/
+*.py[cod]
+.pytest_cache/
