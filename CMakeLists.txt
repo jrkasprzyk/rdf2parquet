@@ -7,6 +7,21 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MSVC)
   add_compile_options(/W4 /permissive-)
+  # CMAKE_CXX_FLAGS* are one-shot cache entries seeded during compiler
+  # detection. Configuring outside a Developer prompt leaves cl.exe unable to
+  # find the STL, detection fails, and CMake caches them *empty* — so the build
+  # silently loses /EHsc (no unwind code, leaks on every throw) and /O2. The
+  # vcpkg toolchain hides this by pinning CMAKE_CXX_COMPILER itself, letting the
+  # configure succeed. Later configures reuse the cache, so this never heals on
+  # its own: the fix is to delete CMakeCache.txt and reconfigure from a
+  # Developer PowerShell for VS 2022.
+  if(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
+    message(FATAL_ERROR
+      "MSVC default flags are missing from the cache (no /EHsc). This build "
+      "directory was configured without the MSVC developer environment. "
+      "Delete ${CMAKE_BINARY_DIR}/CMakeCache.txt and ${CMAKE_BINARY_DIR}/CMakeFiles, "
+      "then reconfigure from a Developer PowerShell for VS 2022.")
+  endif()
 else()
   add_compile_options(-Wall -Wextra)
 endif()
