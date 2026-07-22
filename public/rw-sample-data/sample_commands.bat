@@ -1,83 +1,86 @@
 @echo off
-rem Sample commands demonstrating rdf.py against the bundled RDF files.
-rem Run from the repo root:
+rem Sample commands demonstrating rdf2parquet against the bundled RDF files.
+rem Run from anywhere:
 rem     public\rw-sample-data\sample_commands.bat
+rem
+rem All output goes to %TEMP%\rdf2parquet-samples so this folder stays clean.
 
-setlocal enabledelayedexpansion
+setlocal
 
-set REPO=%~dp0..\..
-set RDF=%~dp0
-set SCRIPTS=%REPO%\scripts\rdf.py
+set "RDF=%~dp0"
+set "REPO=%~dp0..\.."
+set "OUT=%TEMP%\rdf2parquet-samples"
 
-set TRACES=%RDF%sample_traces.rdf
-set SUBSET=%RDF%sample_subset.rdf
+rem Prefer a local build; fall back to whatever is on PATH.
+set "EXE=%REPO%\build\windows\rdf2parquet.exe"
+if not exist "%EXE%" (
+    where rdf2parquet >nul 2>&1
+    if errorlevel 1 (
+        echo ERROR: rdf2parquet not found.
+        echo Looked for "%EXE%" and for rdf2parquet on PATH.
+        echo.
+        echo Build it first, from a Developer PowerShell for VS 2022:
+        echo     cmake --preset windows
+        echo     cmake --build --preset windows
+        exit /b 1
+    )
+    set "EXE=rdf2parquet"
+)
+
+if not exist "%OUT%" mkdir "%OUT%"
 
 echo ============================================================
-echo 1. Info: inspect sample_traces.rdf
+echo 0. Version
 echo ============================================================
-python "%SCRIPTS%" info "%TRACES%"
+"%EXE%" --version || exit /b 1
 
 echo.
 echo ============================================================
-echo 2. Info: inspect sample_subset.rdf
+echo 1. Convert sample_traces.rdf to the default long layout
 echo ============================================================
-python "%SCRIPTS%" info "%SUBSET%"
+"%EXE%" convert "%RDF%sample_traces.rdf" "%OUT%\traces.parquet" || exit /b 1
+echo   wrote %OUT%\traces.parquet
 
 echo.
 echo ============================================================
-echo 3. Convert all slots in sample_traces.rdf (wide format)
-echo    Scalar slots auto-generate a _labels.csv sidecar per output file.
+echo 2. Info: schema, row count, row groups, key-value metadata
 echo ============================================================
-for /f "usebackq delims=" %%S in (`python "%SCRIPTS%" slots "%TRACES%" --series-only`) do (
-    set "SLOT=%%S"
+"%EXE%" info "%OUT%\traces.parquet" || exit /b 1
 
-    rem Build a safe filename: replace spaces and dots with underscores
-    set "SAFE=%%S"
-    set "SAFE=!SAFE: =_!"
-    set "SAFE=!SAFE:.=_!"
-
-    set "OUT=%RDF%output_!SAFE!_wide.csv"
-    echo   slot : !SLOT!
-    echo   out  : !OUT!
-    python "%SCRIPTS%" convert "%TRACES%" --slot "!SLOT!" --output "!OUT!" --format wide
-    echo.
-)
-
+echo.
 echo ============================================================
-echo 4. Convert all slots in sample_traces.rdf (stacked-header wide format)
-echo    Output includes scalar label rows above wide data columns.
+echo 3. Head: first 5 rows, tab-separated
 echo ============================================================
-for /f "usebackq delims=" %%S in (`python "%SCRIPTS%" slots "%TRACES%" --series-only`) do (
-    set "SLOT=%%S"
+"%EXE%" head "%OUT%\traces.parquet" -n 5 || exit /b 1
 
-    set "SAFE=%%S"
-    set "SAFE=!SAFE: =_!"
-    set "SAFE=!SAFE:.=_!"
-
-    set "OUT=%RDF%output_!SAFE!_stacked.csv"
-    echo   slot : !SLOT!
-    echo   out  : !OUT!
-    python "%SCRIPTS%" convert "%TRACES%" --slot "!SLOT!" --output "!OUT!" --format stacked
-    echo.
-)
-
+echo.
 echo ============================================================
-echo 5. Convert all slots in sample_traces.rdf (long format)
+echo 4. To-CSV: the whole file as RFC-4180 CSV
 echo ============================================================
-for /f "usebackq delims=" %%S in (`python "%SCRIPTS%" slots "%TRACES%" --series-only`) do (
-    set "SLOT=%%S"
+"%EXE%" to-csv "%OUT%\traces.parquet" "%OUT%\traces.csv" || exit /b 1
+echo   wrote %OUT%\traces.csv
 
-    set "SAFE=%%S"
-    set "SAFE=!SAFE: =_!"
-    set "SAFE=!SAFE:.=_!"
+echo.
+echo ============================================================
+echo 5. Wide layout: one file per series slot, plus scalars.parquet
+echo    (rdf2parquet converts every slot at once - there is no
+echo     per-slot selection flag)
+echo ============================================================
+"%EXE%" convert "%RDF%sample_subset.rdf" "%OUT%\subset_wide" --wide || exit /b 1
+dir /b "%OUT%\subset_wide"
 
-    set "OUT=%RDF%output_!SAFE!_long.csv"
-    echo   slot : !SLOT!
-    echo   out  : !OUT!
-    python "%SCRIPTS%" convert "%TRACES%" --slot "!SLOT!" --output "!OUT!" --format long
-    echo.
-)
+if not exist "%RDF%res.rdf" goto :done
 
-echo Done.
+echo.
+echo ============================================================
+echo 6. Real-scale sample: res.rdf
+echo    400 traces x 60 monthly timesteps x 105 series slots
+echo ============================================================
+"%EXE%" convert "%RDF%res.rdf" "%OUT%\res.parquet" || exit /b 1
+for %%A in ("%RDF%res.rdf")      do echo   source .rdf : %%~zA bytes
+for %%A in ("%OUT%\res.parquet") do echo   parquet     : %%~zA bytes  (default zstd)
 
+:done
+echo.
+echo Done. Output is in %OUT%
 endlocal
