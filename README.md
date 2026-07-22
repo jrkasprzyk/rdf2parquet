@@ -34,15 +34,15 @@ winget install Microsoft.VisualStudio.2022.BuildTools --override "--add Microsof
 ```
 
 `CMakePresets.json` uses the Ninja generator, so it needs to find both `cmake`
-and `ninja` on `PATH`, and MSVC's compiler needs a Developer environment —
-run the rest of this from a **Developer PowerShell for VS 2022** prompt (or
-`winget`'s installer will have registered one in your Start menu).
+and `ninja` on `PATH`, and MSVC's compiler needs a Developer environment. Run
+everything below from a **Developer PowerShell for VS 2022** prompt — the
+Build Tools installer registers one in your Start menu.
 
 ```powershell
 # once, if you don't already have vcpkg:
 git clone https://github.com/microsoft/vcpkg C:\GitHub\vcpkg
 C:\GitHub\vcpkg\bootstrap-vcpkg.bat
-$env:VCPKG_ROOT = "C:\[path-to]\vcpkg"
+$env:VCPKG_ROOT = "C:\GitHub\vcpkg"
 ```
 
 Then, from this repository:
@@ -52,6 +52,14 @@ cmake --preset windows
 cmake --build --preset windows
 ctest --preset windows --output-on-failure
 ```
+
+The Developer prompt is not optional. Configuring without it leaves `cl.exe`
+unable to find the STL; CMake's compiler detection fails and caches
+`CMAKE_CXX_FLAGS` *empty*, which silently drops `/EHsc` and `/O2`. Those cache
+entries are only ever initialized once, so the build directory never recovers
+on its own. `CMakeLists.txt` fails the configure when it sees this; recover by
+deleting `build/windows/CMakeCache.txt` and `build/windows/CMakeFiles`, then
+reconfiguring from a Developer prompt.
 
 ### Linux
 
@@ -138,14 +146,20 @@ python tools/crosscheck.py tests/fixtures/sample_traces.rdf /tmp/traces.parquet
 ```
 
 This is a manual check, run against both fixtures after a build; it is not
-part of CI (CI has no built binary + pyarrow environment together). Not yet
-run against a local build in this environment — see `docs/FORMAT.md` for why.
+part of CI, which has no environment with both a built binary and pyarrow. It
+needs `pip install pyarrow`, and has not been run yet — the Catch2 suite
+(`ctest`) is the automated gate.
 
 ## Status
 
-Full source, tests, and CI are in place (`plan/rdf2parquet-cpp-1.md` tracks
-task-by-task completion) but the tool has not yet been built or run in this
-environment — no C++ toolchain, CMake, or vcpkg were available where this
-code was written. The GitHub Actions workflow (`.github/workflows/ci.yml`) is
-the first real build/test gate; treat the first CI run (or first local build)
-as a validation step, not a formality.
+v0.1.0 scope is complete: parser, both writers, the four subcommands, and 36
+Catch2 tests, green on Windows (MSVC) and Linux (gcc) in GitHub Actions.
+`plan/rdf2parquet-cpp-1.md` tracks task-by-task completion;
+`.github/workflows/ci.yml` builds and tests both platforms on every push, and
+tagging `v*` publishes a Windows x64 binary to a GitHub release.
+
+Converting 2,520,000 rows of real ensemble output takes under two seconds and
+produces a file 3.8× smaller than the source `.rdf` — see
+[Observed sizes](docs/FORMAT.md#observed-sizes).
+
+Not yet done: the pyarrow cross-check above, and no macOS preset or CI job.
